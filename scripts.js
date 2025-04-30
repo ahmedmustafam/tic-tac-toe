@@ -137,6 +137,40 @@ const gameController = (function (playerOne = "Player One",
         playRound,
         printNewRound,
         switchActivePlayer,
+        getActivePlayer,
+        getBoard: board.getBoard(),
     }
 
 })();
+
+// TODO: function to control and update the DOM
+
+function ScreenController() {
+    const game = gameController;
+    const playerTurn = document.querySelector(".turn");
+    const boardDiv = document.querySelector(".board");
+
+    const updateScreen = () => {
+        boardDiv.textContent = "";
+        const board = game.getBoard;
+        const activePlayerName = game.getActivePlayer();
+
+        playerTurn.textContent = `${activePlayerName.name}'s turn`;
+        board.forEach(row => {
+            row.forEach((cell, cellIndex) => {
+                const cellButton = document.createElement("button");
+                cellButton.classList.add("cell");
+                cellButton.dataset.column = cellIndex;
+                cellButton.textContent = cell.getValue();
+                boardDiv.appendChild(cellButton);
+            })
+        })
+
+
+    }
+
+    updateScreen();
+
+}
+
+ScreenController();
