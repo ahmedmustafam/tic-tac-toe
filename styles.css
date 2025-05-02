@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.board {
+    width: 600px;
+    margin: 24px;
+    text-align: center;
+}
+
+.cell {
+    width: 30%;
+    height: 100px;
+    margin: 4px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+h1 {
+    text-align: center;
+}
+
+.reset {
+    margin-bottom: 16px;
+    width: 20%;
+    height: 36px;
+}

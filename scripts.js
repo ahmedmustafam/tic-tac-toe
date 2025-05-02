@@ -61,11 +61,11 @@ const gameController = (function (playerOne = "Player One",
     const players = [
         {
             name: "Player 1",
-            token: "x"
+            token: "X"
         },
         {
             name: "Player 2",
-            token: "o"
+            token: "O"
         }
     ]
 
@@ -81,15 +81,15 @@ const gameController = (function (playerOne = "Player One",
         console.log(`New round, ${getActivePlayer().name}'s turn`);
     }
 
-    const playRound = () => {
+    let winner = null;
+
+    const playRound = (row, column) => {
         printNewRound();
-        let row = parseInt(prompt("Please enter the desired row", ""));
-        let column = parseInt(prompt("Please enter column", ""));
         const moveSuccessful = board.dropToken(row, column, getActivePlayer().token);
 
         if (!moveSuccessful) {
             console.log("Invalid move, try again");
-            return;
+            return false;
         }
 
         const checkWinner = () => {
@@ -120,17 +120,35 @@ const gameController = (function (playerOne = "Player One",
                 boardArray[0][2].getValue() !== 0) {
                 return boardArray[0][2].getValue();
             }
+
+            return null;
         }
 
-        const winner = checkWinner();
+        winner = checkWinner();
         if (winner) {
             console.log(`Game Over! The winner is ${winner === "x" ? "Player 1" : "Player 2"}!`);
             board.printBoard();
-            return;
+            resetGame();
+            return true;
         }
 
         switchActivePlayer();
         printNewRound();
+        return true;
+    }
+
+    const getWinner = () => winner;
+
+    const resetGame = () => {
+        const boardArray = gameBoard.getBoard();
+        for(let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                boardArray[i][j].addToken(0)
+            }
+        }
+
+        activePlayer = players[0];
+        console.log('Game has been reset');
     }
 
     return {
@@ -139,16 +157,26 @@ const gameController = (function (playerOne = "Player One",
         switchActivePlayer,
         getActivePlayer,
         getBoard: board.getBoard(),
+        resetGame,
+        getWinner
     }
 
 })();
 
-// TODO: function to control and update the DOM
 
 function ScreenController() {
     const game = gameController;
     const playerTurn = document.querySelector(".turn");
     const boardDiv = document.querySelector(".board");
+
+    const resetButton = document.createElement('button');
+    resetButton.textContent = 'Reset Game';
+    resetButton.classList.add('reset');
+    document.body.appendChild(resetButton)
+
+    const messageDiv =  document.createElement('div');
+    messageDiv.classList.add('message');
+    document.body.appendChild(messageDiv)
 
     const updateScreen = () => {
         boardDiv.textContent = "";
@@ -156,21 +184,48 @@ function ScreenController() {
         const activePlayerName = game.getActivePlayer();
 
         playerTurn.textContent = `${activePlayerName.name}'s turn`;
-        board.forEach(row => {
-            row.forEach((cell, cellIndex) => {
+        board.forEach((row, rowIndex) => {
+            row.forEach((cell, columnIndex) => {
                 const cellButton = document.createElement("button");
                 cellButton.classList.add("cell");
-                cellButton.dataset.column = cellIndex;
+                cellButton.dataset.row = rowIndex;
+                cellButton.dataset.column = columnIndex;
                 cellButton.textContent = cell.getValue();
                 boardDiv.appendChild(cellButton);
             })
         })
 
-
     }
+
+    function clickHandler(e) {
+        const selectedRow = e.target.dataset.row;
+        const selectedColumn = e.target.dataset.column;
+        if (selectedRow === undefined || selectedColumn === undefined) return;
+
+        const moveSuccessful = game.playRound(parseInt(selectedRow), parseInt(selectedColumn));
+        if (moveSuccessful) {
+            const winner = game.getWinner();
+            if (winner) {
+                messageDiv.textContent = `Game Over! The winner is ${winner}!`
+            }
+            updateScreen()
+        }
+
+        // updateScreen()
+    }
+
+    resetButton.addEventListener('click', () => {
+        game.resetGame();
+        messageDiv.textContent = '';
+        updateScreen()
+    })
+
+    boardDiv.addEventListener('click', clickHandler);
 
     updateScreen();
 
 }
 
 ScreenController();
+
+
